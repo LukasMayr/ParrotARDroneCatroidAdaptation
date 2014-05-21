@@ -7,6 +7,7 @@
 
 package com.parrot.freeflight.service;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
@@ -16,8 +17,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -103,7 +102,6 @@ public class DroneControlService extends Service implements DroneControlServiceI
 	private Object configLock;
 	private Object workerThreadLock;
 	private Object navdataThreadLock;
-	private WakeLock wakeLock;
 
 	private ARDroneMediaGallery gallery;
 
@@ -136,11 +134,6 @@ public class DroneControlService extends Service implements DroneControlServiceI
 		navdataThreadLock = new Object();
 
 		droneProxy = DroneProxy.getInstance(getApplicationContext());
-
-		// Preventing device from sleep
-		PowerManager service = (PowerManager) getSystemService(POWER_SERVICE);
-		wakeLock = service.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "DimWakeLock");
-		wakeLock.acquire();
 
 		stopThreads = false;
 		prevNavData = new NavData();
@@ -180,10 +173,6 @@ public class DroneControlService extends Service implements DroneControlServiceI
 		super.onDestroy();
 
 		disconnect();
-
-		if (wakeLock != null && wakeLock.isHeld()) {
-			wakeLock.release();
-		}
 
 		Log.d(TAG, "All threads have been stopped");
 
@@ -600,9 +589,6 @@ public class DroneControlService extends Service implements DroneControlServiceI
 	}
 
 	protected void onPaused() {
-		if (wakeLock != null && wakeLock.isHeld()) {
-			wakeLock.release();
-		}
 
 		Log.d(TAG, "====>>> DRONE CONTROL SERVICE PAUSED");
 	}
@@ -610,10 +596,6 @@ public class DroneControlService extends Service implements DroneControlServiceI
 	protected void onResumed() {
 		synchronized (navdataThreadLock) {
 			navdataThreadLock.notify();
-		}
-
-		if (wakeLock != null && !wakeLock.isHeld()) {
-			wakeLock.acquire();
 		}
 
 		Log.d(TAG, "====>>> DRONE CONTROL SERVICE RESUMED");
@@ -911,6 +893,7 @@ public class DroneControlService extends Service implements DroneControlServiceI
 		droneProxy.setCommandFlag(DroneProgressiveCommandFlag.ARDRONE_PROGRESSIVE_CMD_COMBINED_YAW_ACTIVE.ordinal(), b);
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onNewMediaIsAvailable(final String path) {
 		final File file = new File(path);
