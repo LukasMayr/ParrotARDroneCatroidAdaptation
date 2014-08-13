@@ -412,6 +412,11 @@ public class DroneControlService extends Service implements DroneControlServiceI
 		return navdata;
 	}
 	
+	@Override
+	public void requestNavDataUpdate() {
+		droneProxy.updateNavdata();
+	}
+	
 
 	/**
 	 * Will reset all drone configuration to it's default values.
