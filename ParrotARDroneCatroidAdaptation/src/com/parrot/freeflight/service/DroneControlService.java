@@ -100,6 +100,7 @@ public class DroneControlService extends Service implements DroneControlServiceI
 	private EDroneVersion droneVersion;
 
 	private Object configLock;
+	private Object navDataLock;
 	private Object workerThreadLock;
 	private Object navdataThreadLock;
 
@@ -263,7 +264,8 @@ public class DroneControlService extends Service implements DroneControlServiceI
 	 */
 	@Override
 	public void doLeftFlip() {
-		droneProxy.doFlip();
+		//droneProxy.doFlip();
+		this.disconnect();
 	}
 
 	/**
@@ -393,6 +395,23 @@ public class DroneControlService extends Service implements DroneControlServiceI
 
 		return new DroneConfig(config);
 	}
+	
+	/**
+	 * Returns copy of NavData.
+	 * 
+	 * @return instance of NavData.
+	 */
+	@Override
+	public NavData getDroneNavData() {
+		NavData navdata = null;
+
+		synchronized (navDataLock) {
+			navdata = droneProxy.getNavdata();
+		}
+
+		return navdata;
+	}
+	
 
 	/**
 	 * Will reset all drone configuration to it's default values.

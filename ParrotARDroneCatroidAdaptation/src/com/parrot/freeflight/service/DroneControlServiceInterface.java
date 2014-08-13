@@ -23,6 +23,7 @@
 package com.parrot.freeflight.service;
 
 import com.parrot.freeflight.drone.DroneConfig;
+import com.parrot.freeflight.drone.NavData;
 
 /**
  * @author Gerald
@@ -59,6 +60,10 @@ public interface DroneControlServiceInterface {
 	public void moveRight(final float power);
 
 	public DroneConfig getDroneConfig();
+	
+	public NavData getDroneNavData();
+	
+	public void requestNavDataUpdate();
 
 	public void resetConfigToDefaults();
 
